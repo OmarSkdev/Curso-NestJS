@@ -1,4 +1,4 @@
-import { BaseEntity } from "src/config/base.entity";
+import { BaseEntity } from "../../config/base.entity";
 import { ROLES } from "../../constants/roles";
 import { IUser } from "../../interfaces/user.interface";
 import { Column, Entity, OneToMany } from "typeorm";
