@@ -2,14 +2,18 @@ import { Injectable } from "@nestjs/common";
 import { InjectRepository } from "@nestjs/typeorm";
 import { UsersEntity } from "../entities/users.entity";
 import { DeleteResult, Repository, UpdateResult } from "typeorm";
-import { UserDTO, UserUpdateDTO } from "../dto/user.dto";
+import { UserDTO, UserToProjectDTO, UserUpdateDTO } from "../dto/user.dto";
 import { ErrorManager } from "src/utils/error.manager";
+import { UsersProjectsEntity } from "../entities/usersProjects.entity";
+import { throwError } from "rxjs";
 
 @Injectable()
 export class UsersService {
     constructor(
         @InjectRepository(UsersEntity)
-        private readonly userRepository: Repository<UsersEntity>
+        private readonly userRepository: Repository<UsersEntity>,
+        @InjectRepository(UsersProjectsEntity)
+        private readonly userProjectRepository: Repository<UsersProjectsEntity>,
     ) {}
     
     public async createUser(body: UserDTO):Promise<UsersEntity>{
@@ -36,11 +40,21 @@ export class UsersService {
         }
     }
 
+    public async relationToProject(body: UserToProjectDTO){
+        try {
+            return await this.userProjectRepository.save(body);
+        } catch (error) {
+            throw ErrorManager.createSignatureError(error.message);
+        }
+    }
+
     public async findUserById(id: string):Promise<UsersEntity>{
         try {
             const user: UsersEntity = await this.userRepository
                 .createQueryBuilder('user')
                 .where({ id })
+                .leftJoinAndSelect('user.projectsIncludes','projectsIncludes')
+                .leftJoinAndSelect('projectsIncludes.project','project')
                 .getOne();
             if(!user) {
                 throw new ErrorManager({

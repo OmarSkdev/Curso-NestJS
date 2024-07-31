@@ -21,6 +21,11 @@ export class ProjectsController {
     return await this.projectService.findProjectById(id);
     }
 
+    @Post('add-to-project')
+    public async addToProject(@Body() body:any){
+        
+    }
+
     @Put('edit/:id')
     public async updateProject(@Param('id') id:string, @Body() body: ProjectUpdateDTO) {
         return await this.projectService.updateProject(body, id);
